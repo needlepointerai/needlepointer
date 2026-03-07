@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+/* Nautical / coastal palette */
+:root {
+  --background: #F0F4F8;
+  --foreground: #1C2B3A;
+  --sea-glass: #E8EEF4;
+  --navy: #2B5F8E;
+  --teal: #4A9B8E;
+  --sand: #C4956A;
+  --ocean-mist: #B8CCD8;
+  --text-muted: #5A6F7A;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-sea-glass: var(--sea-glass);
+  --color-navy: var(--navy);
+  --color-teal: var(--teal);
+  --color-sand: var(--sand);
+  --color-ocean-mist: var(--ocean-mist);
+  --color-text-muted: var(--text-muted);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-cormorant);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Button contrast: ensure navy/teal backgrounds with white text */
+.btn-primary {
+  background-color: #2B5F8E !important;
+  color: #fff !important;
+}
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.9;
+}
+.btn-teal-solid {
+  background-color: #4A9B8E !important;
+  color: #fff !important;
+}
+.filter-pill {
+  transition: background-color 0.15s, color 0.15s;
+}
+.filter-pill:hover {
+  background-color: #4A9B8E !important;
+  color: #fff !important;
+}
+
+/* Status badges: ensure dark backgrounds with white text */
+.badge-navy {
+  background-color: #2B5F8E !important;
+  color: #fff !important;
+}
+.badge-teal {
+  background-color: #4A9B8E !important;
+  color: #fff !important;
+}
+.badge-sand {
+  background-color: #C4956A !important;
+  color: #fff !important;
+}
+.badge-muted {
+  background-color: #B8CCD8 !important;
+  color: #1C2B3A !important;
+}
+
+.hero-navy {
+  background-color: #2B5F8E !important;
+  color: #fff !important;
+}
+
+/* Needlepoint canvas mesh texture */
+.canvas-mesh {
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+
+.canvas-mesh-dots {
+  background-image: radial-gradient(circle at center, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
+  background-size: 12px 12px;
+}
+
+/* Hero roles animation */
+.roles,
+.roles-section {
+  max-width: 420px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 40px 20px;
+  font-family: var(--font-cormorant), serif;
+}
+
+
+.role,
+.role-line {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+  font-size: 1.15rem;
+  line-height: 1.9;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.role.show,
+.role-line.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.role-line.hide {
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.needlepointer {
+  opacity: 0;
+  margin-top: 28px;
+  font-size: 2rem;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: opacity 0.9s ease, transform 0.9s ease;
+  transform: translateY(8px);
+}
+
+.needlepointer.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.needlepointer.hide {
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
