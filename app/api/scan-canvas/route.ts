@@ -1,6 +1,7 @@
+open ~/Documents/needlepointer/app/api/scan-canvas/route.ts
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-
+import sharp from "sharp";
 const SCAN_PROMPT = `You are analyzing a photo of a needlepoint canvas. Extract the following and return ONLY a valid JSON object (no markdown, no code fence). Use null for any field you cannot read or are unsure about.
 
 Return this exact structure:
@@ -48,9 +49,15 @@ export async function POST(request: Request) {
     );
   }
 
-  const base64 = imageData.replace(/^data:image\/\w+;base64,/, "");
+  let base64 = imageData.replace(/^data:image\/\w+;base64,/, "");
   const mediaType = imageData.startsWith("data:image/png") ? "image/png" : imageData.startsWith("data:image/gif") ? "image/gif" : imageData.startsWith("data:image/webp") ? "image/webp" : "image/jpeg";
-
+  if (imageData.startsWith("data:image/heic") || imageData.startsWith("data:image/heif")) {
+    const buffer = Buffer.from(base64, "base64");
+    const converted = await sharp(buffer).jpeg({ quality: 90 }).toBuffer();
+    base64 = converted.toString("base64");
+    mediaType = "image/jpeg";
+  }
+  
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
   try {
