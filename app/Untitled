@@ -1,0 +1,1 @@
+"In HeroRoles.tsx, remove the Cormorant Garamond import and all references to cormorant.style.fontFamily. Let everything use the project default Geist Sans font."

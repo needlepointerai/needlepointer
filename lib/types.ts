@@ -4,7 +4,8 @@ export type CanvasStatus =
   | "in stash"
   | "WIP"
   | "to finish"
-  | "complete";
+  | "complete"
+  | "framed";
 
 export interface Canvas {
   id: string;

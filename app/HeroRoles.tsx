@@ -69,6 +69,7 @@ export default function HeroSection() {
 
   return (
     <>
+    {/* Section 1: above the fold — logo, typewriter, divider, bridge line, CTAs */}
     <section
       style={{
         minHeight: "100svh",
@@ -171,8 +172,8 @@ export default function HeroSection() {
                 fontWeight: 400,
                 fontStyle: "italic",
                 fontFamily: "Georgia, Times New Roman, serif",
-                color: "#1E3A47",
-                letterSpacing: "-0.02em",
+                color: "#7BAFC0",
+                letterSpacing: "-0.01em",
                 animation: "fadeUp 0.5s ease forwards",
               }}
             >
@@ -196,10 +197,9 @@ export default function HeroSection() {
         {/* Bridge line */}
         <p
           style={{
-            fontSize: 15,
+            fontSize: 17,
             lineHeight: 1.6,
-            color: "#4A7C8E",
-            fontStyle: "italic",
+            color: "#1C3A4A",
             fontFamily: "Georgia, Times New Roman, serif",
             marginBottom: 20,
           }}
@@ -207,30 +207,18 @@ export default function HeroSection() {
           Out there we wear a lot of hats—but in here, we&#39;re just needlepointers.
         </p>
 
-        {/* Body copy */}
+        {/* Tagline */}
         <p
           style={{
-            fontSize: 15,
-            lineHeight: 1.75,
-            color: "#2C4A57",
-            fontWeight: 400,
-            marginBottom: 12,
-          }}
-        >
-          The corner of the internet where your <strong>canvas stash</strong> gets a proper catalog, your <strong>WIPs</strong> get the spotlight they deserve, and your <strong>thread collection</strong> finally has a home.
-        </p>
-
-        <p
-          style={{
-            fontSize: 15,
+            fontSize: 13,
             lineHeight: 1.7,
             color: "#4A7C8E",
-            marginBottom: 40,
+            marginBottom: 28,
             fontFamily: "Georgia, Times New Roman, serif",
             fontStyle: "italic",
           }}
         >
-          Share progress, meet your people. This craft isn&#39;t a hobby—it&#39;s a lifestyle.
+          Share progress, swap ideas, and meet people who get it, because this craft isn&#39;t a hobby…it&#39;s a lifestyle.
         </p>
 
         {/* CTAs */}
@@ -285,11 +273,11 @@ export default function HeroSection() {
       `}</style>
     </section>
 
-    {/* Features section */}
+    {/* Section 2: below the fold */}
     <section
       style={{
         background: "#EEF2F5",
-        padding: "48px 24px 64px",
+        padding: "0 24px 64px",
       }}
     >
       {/* Divider */}
