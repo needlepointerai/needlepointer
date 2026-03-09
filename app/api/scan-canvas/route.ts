@@ -49,7 +49,7 @@ export async function POST(request: Request) {
   }
 
   const base64 = imageData.replace(/^data:image\/\w+;base64,/, "");
-  const mediaType = imageData.startsWith("data:image/png") ? "image/png" : "image/jpeg";
+  const mediaType = imageData.startsWith("data:image/png") ? "image/png" : imageData.startsWith("data:image/gif") ? "image/gif" : imageData.startsWith("data:image/webp") ? "image/webp" : "image/jpeg";
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 

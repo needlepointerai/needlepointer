@@ -158,7 +158,7 @@ export default function StashPage() {
   async function handleScanFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
-    if (!file || !file.type.startsWith("image/")) return;
+    if (!file || !file.type.startsWith("image/") && file.type !== "image/heic" && file.type !== "image/heif") return;
     setScanLoading(true);
     setScanError(null);
     setScanResults(null);
