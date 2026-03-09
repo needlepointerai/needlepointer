@@ -343,7 +343,6 @@ export default function StashPage() {
             ref={fileInputRef}
             type="file"
             accept="image/*"
-            capture="environment"
             className="hidden"
             aria-hidden
             onChange={handleScanFileChange}
