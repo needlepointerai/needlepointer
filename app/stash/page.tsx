@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import type { Canvas, CanvasThread, CanvasWithThreads, CanvasStatus, MeshCount } from "@/lib/types";
@@ -48,6 +48,16 @@ const emptyThread = (): ThreadInput => ({
   quantity: "1",
 });
 
+export interface ScanResult {
+  name: string | null;
+  designer: string | null;
+  retailer: string | null;
+  mesh_count: string | null;
+  thread_colors: string[];
+  lot_number: string | null;
+  condition: string | null;
+}
+
 export default function StashPage() {
   const [canvases, setCanvases] = useState<CanvasWithThreads[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,6 +74,11 @@ export default function StashPage() {
   const [tagInput, setTagInput] = useState("");
   const [threads, setThreads] = useState<ThreadInput[]>([emptyThread()]);
   const [filterTag, setFilterTag] = useState<string | null>(null);
+
+  const [scanLoading, setScanLoading] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const [scanResults, setScanResults] = useState<ScanResult | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function loadCanvases() {
     setLoading(true);
@@ -135,6 +150,83 @@ export default function StashPage() {
       e.preventDefault();
       addTag();
     }
+  }
+
+  function handleScanClick() {
+    setScanError(null);
+    setScanResults(null);
+    fileInputRef.current?.click();
+  }
+
+  async function handleScanFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !file.type.startsWith("image/")) return;
+    setScanLoading(true);
+    setScanError(null);
+    setScanResults(null);
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result as string);
+        r.onerror = reject;
+        r.readAsDataURL(file);
+      });
+      const res = await fetch("/api/scan-canvas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: dataUrl }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setScanError(data.error || "Scan failed");
+        return;
+      }
+      setScanResults({
+        name: data.name ?? null,
+        designer: data.designer ?? null,
+        retailer: data.retailer ?? null,
+        mesh_count: data.mesh_count ?? null,
+        thread_colors: data.thread_colors ?? [],
+        lot_number: data.lot_number ?? null,
+        condition: data.condition ?? null,
+      });
+    } catch (err) {
+      setScanError(err instanceof Error ? err.message : "Scan failed");
+    } finally {
+      setScanLoading(false);
+    }
+  }
+
+  function applyScanToForm() {
+    if (!scanResults) return;
+    if (scanResults.name) setName(scanResults.name);
+    if (scanResults.designer) setDesigner(scanResults.designer);
+    if (scanResults.retailer) setRetailer(scanResults.retailer);
+    if (
+      scanResults.mesh_count &&
+      ["13", "18", "other"].includes(scanResults.mesh_count.toLowerCase())
+    ) {
+      setMeshCount(scanResults.mesh_count.toLowerCase() as MeshCount);
+    }
+    const noteParts: string[] = [];
+    if (scanResults.condition) noteParts.push(`Condition: ${scanResults.condition}`);
+    if (scanResults.thread_colors?.length)
+      noteParts.push(`Thread colors: ${scanResults.thread_colors.join(", ")}`);
+    if (noteParts.length) setNotes(noteParts.join("\n"));
+    if (scanResults.lot_number && threads[0]) {
+      setThreads([
+        {
+          ...threads[0],
+          lot_number: scanResults.lot_number,
+          brand: threads[0].brand || "",
+          color_number: threads[0].color_number || "",
+          color_name: threads[0].color_name || "",
+          quantity: threads[0].quantity || "1",
+        },
+      ]);
+    }
+    setScanResults(null);
   }
 
   async function handleDeleteCanvas(canvasId: string) {
@@ -244,6 +336,33 @@ export default function StashPage() {
           {error && (
             <p className="mb-4 rounded-lg bg-ocean-mist/40 px-4 py-2 text-sm text-foreground">
               {error}
+            </p>
+          )}
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            aria-hidden
+            onChange={handleScanFileChange}
+          />
+          <button
+            type="button"
+            onClick={handleScanClick}
+            disabled={scanLoading}
+            className="btn-primary mb-6 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-2 focus:ring-offset-sea-glass disabled:opacity-60"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+              <circle cx="12" cy="13" r="3" />
+            </svg>
+            {scanLoading ? "Scanning…" : "Scan canvas with AI"}
+          </button>
+          {scanError && (
+            <p className="mb-4 rounded-lg bg-ocean-mist/40 px-4 py-2 text-sm text-foreground">
+              {scanError}
             </p>
           )}
 
@@ -605,6 +724,89 @@ export default function StashPage() {
           )}
         </section>
       </main>
+
+      {scanResults && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="scan-results-title"
+          onClick={() => setScanResults(null)}
+        >
+          <div
+            className="max-h-[90vh] w-full max-w-md overflow-auto rounded-2xl border border-ocean-mist bg-sea-glass p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2
+              id="scan-results-title"
+              className="mb-4 text-xl font-semibold text-foreground"
+              style={{ fontFamily: "var(--font-cormorant), serif" }}
+            >
+              Scan results
+            </h2>
+            <dl className="space-y-2 text-sm">
+              {scanResults.name != null && (
+                <div>
+                  <dt className="font-medium text-text-muted">Name</dt>
+                  <dd className="text-foreground">{scanResults.name || "—"}</dd>
+                </div>
+              )}
+              {scanResults.designer != null && (
+                <div>
+                  <dt className="font-medium text-text-muted">Designer</dt>
+                  <dd className="text-foreground">{scanResults.designer || "—"}</dd>
+                </div>
+              )}
+              {scanResults.retailer != null && (
+                <div>
+                  <dt className="font-medium text-text-muted">Retailer</dt>
+                  <dd className="text-foreground">{scanResults.retailer || "—"}</dd>
+                </div>
+              )}
+              {scanResults.mesh_count != null && (
+                <div>
+                  <dt className="font-medium text-text-muted">Mesh count</dt>
+                  <dd className="text-foreground">{scanResults.mesh_count || "—"}</dd>
+                </div>
+              )}
+              {scanResults.thread_colors?.length > 0 && (
+                <div>
+                  <dt className="font-medium text-text-muted">Thread colors</dt>
+                  <dd className="text-foreground">{scanResults.thread_colors.join(", ")}</dd>
+                </div>
+              )}
+              {scanResults.lot_number != null && (
+                <div>
+                  <dt className="font-medium text-text-muted">Lot number</dt>
+                  <dd className="text-foreground">{scanResults.lot_number || "—"}</dd>
+                </div>
+              )}
+              {scanResults.condition != null && (
+                <div>
+                  <dt className="font-medium text-text-muted">Condition</dt>
+                  <dd className="text-foreground">{scanResults.condition || "—"}</dd>
+                </div>
+              )}
+            </dl>
+            <div className="mt-6 flex gap-3">
+              <button
+                type="button"
+                onClick={applyScanToForm}
+                className="btn-primary flex-1 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-2"
+              >
+                Apply to form
+              </button>
+              <button
+                type="button"
+                onClick={() => setScanResults(null)}
+                className="rounded-xl border border-ocean-mist bg-sea-glass px-4 py-2.5 text-sm font-medium text-foreground hover:bg-ocean-mist/50 focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-2"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
